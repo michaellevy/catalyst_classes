@@ -1,0 +1,12 @@
+*.arf
+*.html
+*.pdf
+*.doc*
+*.png
+dplyr/data/DataScience_TrainingDataset_DO_NOT_DISTRIBUTE.csv
+*.Rproj*
+*_files*
+.Rhistory
+.sublime-workspace
+.DS_Store
+terminal.glue

@@ -1,0 +1,209 @@
+---
+title: "Health Catalyst Intro R"
+author: "Michael Levy"
+date: "April 10, 2017"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, eval = FALSE)
+```
+
+# Setup and notes
+
+MCQ: http://tinyurl.com/catalyst-mcq  
+Live-script: http://tinyurl.com/catalyst-script  
+
+# Intro R & RStudio
+
+- Why R?
+    - First: Why code?
+        - Power
+        - Flexibility
+        - Editability -- error fixing, tweaks
+        - Traceability -- return and know what was done
+        - Reproducability
+        - Communication -- no ambiguity
+    - Built for data analysis
+    - Extended
+    - User community
+    - Full-fledged programming language
+        - **Run hello world** 
+- Why RStudio?
+    - **Open it**
+    - Integrates and organizes: 3 panels
+    - Cross-platform (incl. AWS)
+
+Console vs. script
+
+- **Introduce live_script**
+- Pushing code & keyboard shortcuts
+
+## R Basics
+
+- Calculator
+    - Hanging command  
+    - Order of operations
+- Whitespace
+- Comments
+- Scientific notation
+- Functions - `log`
+    - Nested functions - `log(exp(2))`
+- Comparison
+- Variable assignment, reassignment
+    - **MCQ #1**
+- variable_name_conventions
+    - tab auto-complete
+    
+## Digging in
+
+- help
+    - ?log
+    - ??logarithm
+    - google / SO
+    - Cookbook
+    - RStudio cheatsheets
+- Arguments to functions -- `log`
+    - **MCQ #2**
+- Errors, warnings, and messages
+- **Data challenge**
+
+
+# Projects
+
+- Idea of a script that does everything
+    - Keep raw data sacrosanct
+    - Output is disposable
+- Good organization makes life easier
+    - **Show viticulture dir**
+- RStudio projects help
+    - Walk through an example
+    - **Project setup exercise**
+    
+    
+# Data frames
+
+- Create a new script
+- `library(tidyverse)`
+- read_csv the data
+    - library and read_csv are functions
+    - have to assign `read_csv()` to variable
+- Examine & explain dataset
+    - Rows and columns. 
+    - Click in Environment to see spreadsheet
+- **Shoutout: `summary`**
+    - Oldest person in the dataset?
+
+# Visualization
+
+- Why visualization in hour 1
+- ggplot part of tidyverse, base and lattice
+- Three pieces: data, coordinate system, layers
+
+```{r}
+ggplot(d, aes(x = age, y = days_to_appt)) + 
+    geom_point()
+```
+
+- Just ggplot call
+    - Assign and build
+    - Can add details, e.g.axis labels
+- **Challenge: risk vs age**
+
+## Continuous vs. discrete variables
+
+#### One continuous variable: density curve or histogram
+
+```{r}
+ggplot(d, aes(x = age)) + 
+    geom_density()
+
+ggplot(d, aes(x = age)) + 
+    geom_histogram()
+```
+
+- Set color and fill manually
+
+#### One discrete variable: bar
+
+```{r}
+ggplot(d, aes(x = reminders)) +
+    geom_bar(stat = "count")
+```
+
+#### One discrete, one continuous
+
+```{r}
+ggplot(d, aes(x = status, y = age)) + 
+    geom_boxplot()
+
+ggplot(d, aes(fill = status, x = age)) + 
+    geom_density(alpha = .5)
+```
+
+- Or, density curves with diff fill
+    - Set alpha
+    - Change theme
+
+- **Challenge: boxplots**   
+    - Log y
+
+```{r}
+ggplot(d, aes(y = days_to_appt, color = status, x = subsidized)) + 
+    geom_boxplot() +
+    scale_y_log10()
+```
+
+
+#### Two discrete variables (bar)
+    - Position: stack, dodge, fill
+    
+```{r}
+ggplot(d, aes(x = gender, fill = status)) +
+    geom_bar(stat = "count", position = "dodge")
+```
+
+#### Two continuous, one discrete?
+
+- Earlier bonus: risk vs. age by subsidized
+- Overplotting: Smaller/alpha points
+    - Demo aes vs. hard-setting
+- Smoothers
+    - lm vs. loess
+- aes to all vs. some layers
+    - size, linetype
+    
+```{r}
+ggplot(d, aes(x = age, y = days_to_appt, color = subsidized)) + 
+    geom_point() + 
+    geom_smooth(method = "lm")
+```
+
+**MCQ: Which plot?**
+
+
+
+## Faceting
+
+```{r}
+ggplot(d, aes(x = health_risk, fill = status)) + 
+    geom_density(alpha = .5) +
+    facet_wrap(~ gender)
+    
+ggplot(d, aes(x = health_risk, fill = status)) + 
+    geom_density(alpha = .5) +
+    facet_grid(gender ~ subsidized, labeller = label_both) +
+    scale_fill_brewer(palette = "Accent")
+```
+
+- Change palette
+- `ggsave`
+
+**Final exercise**
+
+```{r}
+ggplot(d, aes(x = age, y = health_risk, color = gender)) + 
+    geom_point() + 
+    geom_smooth(method = "lm") + 
+    facet_wrap(~ subsidized) 
+```

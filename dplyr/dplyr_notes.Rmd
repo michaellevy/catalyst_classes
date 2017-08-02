@@ -1,0 +1,100 @@
+---
+title: "dplyr notes"
+output: html_document
+---
+
+### setup
+
+**Project setup slide**
+
+- Create project & download csv: tinyurl.com/dplyrdata
+- install.packages("tidyverse")
+- library(tidyverse)
+  - Google for more: good community
+
+  
+### read_csv
+
+- defaults
+  - print vs assigning & R paradigm
+- viewing:
+  - View / click
+    - $ extraction
+      - vectorized operations
+    - vectors vs data frames
+      - assign vectors
+      - operate on vectors
+  - glimpse
+- grep alpha
+- read_csv(... , na = "NULL")
+  - missingness
+  - NA vs NULL
+    - Diversion to c(), mean(), and sum()
+    - na.rm
+    - sum of TRUEs
+  - is.na()
+- *Demo using help*: read_csv(... , col_types = "cci...")
+
+**Exercise** Data Import and helpfiles
+
+- https://www.dropbox.com/s/dkgd6vicdbz04gw/gapminder.txt?dl=1
+
+### %>%
+
+- vec %>% sum()
+- vec %>% mean() %>% sqrt()
+- typical use is data frames: tidyverse API
+
+### Five verbs
+
+**Five verbs slide**
+
+- All take DF in and put DF out
+
+### filter
+
+- `==` for comparison
+- & and |
+- **MCQ**
+  - Demo `count` on return ("preview grouping")
+
+### arrange
+
+- w/desc
+- multiple variables
+- `top_n`
+
+### select
+
+- Only to choose. Unlike SQL.
+- Can use positions
+- Exclude w/ -
+- Can rename
+  - `rename` to keep other columns
+  
+### mutate
+
+- length of stay in years
+- Can use multiple columns, everything row-wise
+**Exercise: Thallium recoding**
+
+### group_by & summarize
+
+- Can calculate any number of functions
+- summarize_at for same function on multiple variables
+- group_by %>% mutate for self join
+
+### count
+
+- multiple variables
+- weight
+- sort
+- dotchart w/single variable
+- stacked barchart with grouping variable
+
+### joins
+
+### Closing
+
+Future availability: https://goo.gl/forms/V5hMrtQSOFWYibRx2
+Feedback: https://goo.gl/forms/V5hMrtQSOFWYibRx2

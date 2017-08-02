@@ -1,0 +1,609 @@
+---
+title: Structural signatures of innovation, cooperation, and boundary spanning in
+  agriculture knowledge networks
+author: "Michael Levy and Mark Lubell"
+date: "`r format(Sys.time(), '%Y-%m-%d')`"
+output: pdf_document
+documentclass: article
+csl: pnas.csl
+bibliography: VitNets.bib
+---
+
+```{r R setup, include = FALSE}
+# This file contains the manuscript and all analyses therein.
+# The inputs listed below and necessary R packages, which will be installed if
+# needed, are sufficient for full reproduction of the paper.
+
+# Requirements: 
+  # Input files (all should be in the same directory as this file)
+    # networks.RDS -- Data. List of three statnet network objects.
+    # VitNets.bib -- Bibliography entries
+    # pnas.csl -- Bibliography formatting style
+  # System Requirements: 
+    # Unix-like system for the parallel computing mechanism
+    # pandoc
+    # citeproc
+
+# Outputs:
+  # ViticultureNetworks.pdf -- the manuscript
+  # SessionInfo.txt -- R session information including package versions
+  # timing.txt -- Time to run the two intensive computations. ~12h total on the author's laptop.
+  # /data/ -- Three derivative .RDS files so that compilations after the first are fast (< 1m).
+
+# Check for needed packages and install if missing
+cranPackages = c("tidyverse", "statnet", "knitr", "viridis", "parallel",
+                 "devtools", "stargazer", "igraph", "intergraph", "cowplot")
+toInstall = cranPackages[!(cranPackages %in% installed.packages()[, "Package"])]
+if(length(toInstall)) 
+  install.packages(toInstall, repos = "http://cran.us.r-project.org")
+# Install the author's network utilities package from github
+if(!"netUtils" %in% installed.packages()[, "Package"])
+  devtools::install_github(repo = "michaellevy/netUtils")
+# Attach all the packages except igraph because its namespace conflicts with statnet
+lapply(c(cranPackages[-which(cranPackages == "igraph")], "netUtils"), library, char = TRUE)
+
+# Write session info to file
+writeLines(capture.output(sessionInfo()), "SessionInfo.txt")
+
+# Detect platform and stop if parallel computing is needed (derived data not present) and the user is on Windows
+if(grepl("Windows", sessionInfo()$running) && length(list.files("data/")) < 3)
+  stop("The parallel computing mechanism used here won't run on Windows.
+One solution is to download the data computed in parallel from the following link, and place the directory, called \"data\", in the same directory as the .Rmd file. The data directory is available here:
+\thttps://www.dropbox.com/sh/ow4tzr9dsg63h67/AAAqdfBVj1NncAHsQz8kQzFNa?dl=0")
+nClusters = detectCores() - 1
+
+# Load data
+networks = readRDS("networks.RDS")
+# Create a directory to store derived data
+dir.create("data")
+
+# Set document options for code chunk output
+opts_chunk$set(cache = FALSE, fig.height = 2.5, fig.width = 6.5,
+               echo = FALSE, results = "hide", message = FALSE, warning = FALSE) 
+# Set ggplot options
+theme_set(theme_bw(base_size = 9))
+set.seed(94558)
+# Assign a color to each region for plotting
+regColors = structure(viridis_pal(option = "C")(3), names = names(networks))
+```
+
+
+# TITLE PAGE
+
+Classification:
+
+- Major: Social sciences
+- Minor: Sustainability science
+
+Title: Structural signatures of innovation, cooperation, and boundary spanning in agriculture knowledge networks
+
+Short title: Innovation & cooperation structures in ag networks
+
+Author affiliation: 
+
+- Michael A. Levy$^1$
+- Mark N. Lubell$^2$
+
+$^{1, 2}$ Department of Environmental Science and Policy, University of California, Davis. One Shields Avenue, Davis, CA 95616.  
+$^1$ ORCID ID: 0000-0002-4188-2527
+
+Corresponding author: Michael A. Levy, One Shields Avenue, Davis, CA 95616, 970-426-5389, malevy@ucdavis.edu
+
+Keywords: agriculture, sustainability, resource management, complex systems, resilience, social network analysis, exponential random graph models
+
+\newpage
+
+# ABSTRACT
+
+A major question in sustainability science is how different social network structures link to social processes that support sustainable resource management. We argue that social networks in agroecological systems will exhibit structures related to three social processes: ties to central actors that build bridging social capital and facilitate the diffusion of innovations, ties that close triangles and build bonding social capital to solve cooperation dilemmas, and ties to individuals that span community boundaries to connect specialized components of the system.  We use survey data to measure the communication networks of growers in three viticulture regions in California, which are economically successful and provide leadership in sustainable policies, programs, and practices. A combination of descriptive statistics, conditional uniform random graph tests, and exponential random graph models provides empirical support for all of our hypotheses.  
+
+# SIGNIFICANCE STATEMENT
+
+Agroecological systems are examples of complex adaptive systems, where sustainability is dependent on the capacity to learn and self-organize. Given the importance of human behavior in these systems, sustainability requires networks that facilitate information sharing, cooperation, and connections among specialized components of the system. From a theoretical perspective, it is significant to recognize how these different types of social capital co-exist within a system. Testing this argument requires empirical models with parameters that capture the underlying generative processes. By developing a better understanding of these issues, policy-makers and outreach professionals can begin to think strategically about assembling knowledge networks and innovation systems for sustainability.
+
+# TEXT
+
+
+# Introduction
+
+In the past twenty years, a large literature has established the relevance of social networks to sustainability-related behaviors among individuals, organizations, and political institutions [@adger_social_2003; @barnes_social_2016; @bodin_social_2011; @carlsson_policy_2000; @janssen_toward_2006; @weible_beliefs_2005]. Sometimes referenced under the term "social capital", social networks are hypothesized to facilitate social processes such as learning and cooperation that enable human societies to adapt to dynamic and complex social-ecological systems [@boyd_cultural_2011; @coleman_social_1988; @ostrom_governing_1990]. However, this literature faces two major puzzles. First, while most sustainability science researchers agree networks matter, there is no consensus on how different types of networks affect behavior in different contexts [@bodin_role_2009-3; @janssen_toward_2006]. Second, researchers often ascribe only a single social process to networks---for example, learning or cooperation---instead of analyzing how networks support multiple social processes that contribute to sustainability and resiliency.  For instance, in the face of changing water availability in agroecological systems, agricultural producers must learn about new problems in the short-term (how should I irrigate my crops given current water availability?) and long-term (how much water will be available in the next decade, given drought and climate change?) and self-organize to change behaviors and institutions (how can our community reduce groundwater pumping?). Networks that support multiple social processes are more capable of positively contributing to sustainable and resilient social-ecological systems.  
+
+This paper addresses the puzzle of multiple social processes by analyzing the structure of social networks among winegrape growers in three regions of California, USA. We use a survey of over 500 growers to measure their social network relationships.  We argue that the observed structures in social networks are signatures of three underlying social processes that motivate interaction in agroecological systems:  diffusion of innovation, cooperation, and boundary-spanning. Diffusion of innovation theory hypothesizes that innovation is facilitated by networks that efficiently transmit information.  Cooperation is facilitated by networks that allow the development of reputation and trust. Boundary-spanning networks link together specialized components of food systems, which helps bring different types of expertise into the overall agricultural value chain. As will be explained later, each of these social processes is represented by different structural characteristics of networks, which provides the basis for empirical hypothesis testing. The social processes can be considered generative models for social network structure: Local social processes affect with whom each individual forms ties, and the aggregate of those ties form structural signatures of the social processes.
+
+Agroecological systems are important to study because they are complex social-ecological systems, where networks might contribute to resilience and sustainability.  Globally, agricultural systems have been crucial to the development of modern civilization and they are now facing significant sustainability issues such as food security, natural resource management, and climate change.  To address these issues, agricultural systems must catalyze the diffusion of innovations like new farm management practices [@baumgart-getz_why_2012-1; @saltiel_adoption_1994], cooperation to address common-pool resource problems like groundwater management [@agrawal_common_2001-1; @dietz_drama_2002; @henry_information_2011], and boundary-spanning across different specialized components of food systems [@hoffman_network-smart_2015; @lubell_extension_2014]. Viticulture is a particularly useful example because it is a highly innovative and economically viable industry that is increasingly experimenting with sustainability programs, policies, and practices [@lubell_innovation_2011].  In the next section, we discuss how the social network literature has viewed the relationship between social capital, network structure, innovation, and collective action. We then describe our hypotheses about how network structures develop in the context of agroecological systems.  
+
+## Networks: The Multiple Faces of Social Capital
+
+A central theme of sustainability science and the broader social science literatures is that networks constitute a form of social capital that affects the ability of individuals and groups to acquire resources and achieve goals [@coleman_social_1988; @putnam_prosperous_1993]. Networks are often advocated for enhancing resilience and adaptive capacity in resource management [@adger_social_2003; @folke_adaptive_2005-1; @weible_beliefs_2005], but it is increasingly recognized that a prescription of "more networks" is insufficient: particular network structures emerge in various situations and are needed for certain capacities [@newman_network_2005; @bodin_social_2006]. Network density, for example, may promote trust building and compliance with social norms [@coleman_social_1988; @granovetter_economic_1985], but too much density may lead to homogeneity and reduce capacity for innovation [@bodin_information_2005-2; @oh_group_2004]. Therefore, in different kinds of decision contexts, we expect to observe different types of social network structures. 
+
+The argument that networks support multiple social processes builds on the classic distinction in the social network literature between "open" and "closed" network structures. This distinction appears in a variety of flavors: weak versus strong ties [@granovetter_strength_1973], bridging versus bonding social capital [@putnam_prosperous_1993; @adger_social_2003], structural holes versus redundant networks [@burt_network_2000], and cooperation versus coordination networks [@berardo_self-organizing_2010]. Coleman [@coleman_social_1988] and Granovetter [@granovetter_economic_1985], among others, argue that closure, a network tie between two individuals who share a common partner, is the key aspect of network social capital, facilitating cooperation through trust and the ability to sanction non-cooperators. In contrast, Burt [@burt_network_2000] argues that individuals with links to many other non-redundant groups and individuals---open structures that bridge what he calls "structural holes" between groups---are located in advantageous brokerage positions, with access to diverse sources of information and other resources. Adger [@adger_social_2003] argues that strong, local bonding ties confer private benefits while bridging or "networking" ties can enhance collective governance. More recently, Berardo and Scholz [@berardo_self-organizing_2010] argue that the advantages of open versus closed structures depend on the type of issue at hand. In collective action problems that mainly require coordination, open structures forming ties to central brokers will predominate, whereas in more problematic cooperation problems with free-riding incentives, local reciprocal and transitive ties that provide closure can enable cooperation. 
+
+While the distinction between open and closed networks is useful, we argue that networks may include a mixture of both open and closed structures in order to support multiple social processes. An actor may have some local ties that facilitate cooperation, such as reciprocity or closed triangles. That same actor may also have ties to central actors that serve as information hubs, or to disparate groups that provide novel information or resources.  Aggregated to the network level, closed ties create high levels of clustering, while open structures create centralized networks with short average path lengths that facilitate the rapid diffusion of information. Networks with structures that enable multiple types of social capital contribute to the resilience of complex adaptive systems, which must simultaneously have the capacity to learn and self-organize [@anderies_panaceas_2007; @levin_social-ecological_2013; @simon_organization_1977].
+
+## Linking Network Structures to Key Social Processes
+
+In this section, we describe the three key social processes that motivate social relationships in agroecological systems, and how they are linked to specific structural properties of networks. Articulating the correspondence between a social process and the network measures that are included in statistical models is necessary to develop hypotheses that can be empirically tested with our winegrape grower data. We test for the structural signature of each social process first by comparing the observed frequency of relevant network statistics to the distribution of statistics from uniform random graphs that make no assumptions about generative social processes, then more rigorously with exponential random graph models (ERGMs) that account for the concomitant effects of multiple social processes. 
+
+### Innovation, short path lengths, and centralization
+
+Diffusion of innovation is the classic theory used to describe the process by which individual growers adopt agricultural practices [@rogers_diffusion_2003; @ryan_diffusion_1943]. The basic version of diffusion of innovation theory is a variation on rational choice theory, where actors make decisions based on the benefits and costs of a potential innovation. It is assumed that the innovations confer only private costs and benefits at the individual level; the payoff from the adoption decision is independent of the actions of others. Because farmers operate in markets and ecosystems, strict independence is never realized, but it may be a reasonable approximation for some farm-management decisions [@drummond_agricultural_2010]. In this context networks serve primarily to transfer information about the innovation's benefit/cost ratio, and thus can be considered as a form of social learning [@hoffman_network-smart_2015; @lubell_innovation_2011].
+
+Diffusion on networks is facilitated by short paths between pairs of nodes [@jackson_social_2010]. At the individual level, rapid access to information is achieved by linking to the center of the network, where information accrues from all parts of the network. At the network level, this generates centralized networks, i.e. networks with high-variance degree distributions. To see why, consider the extremes for a network with $N$ nodes and $N - 1$ edges: If one central node is connected to every other node (i.e. a star graph), the average path length is minimal, $2 \times (1 - \frac{1}{N})$, and degree centralization is maximal. The central node serves a coordinating hub so that wherever information originates, it is within two edges of every other node. At the other extreme, consider a line graph in which every node is connected to two neighbors (except the two nodes on the ends, which have one neighbor each). This network has maximal average path length, $\frac{N + 1}{3}$, and minimal degree centralization. Wherever it arises, information will diffuse slowly. In general, links to central nodes shorten paths and speed diffusion on networks [@leavitt_effects_1951; @peres_impact_2014].
+
+We provide an initial test for this aspect of the networks by comparing observed path lengths and centralizations to those of uniform random graphs of the same sizes and densities as the observed networks. For each network, we summarize path lengths with the harmonic mean path length (HMPL) which accounts for disconnected dyads [@newman_structure_2003], and centralization with degree centralization, a measure of the absolute difference of degree of each node in the network from the highest-degree node, normalized to the maximum possible value for a network of that size [@freeman_centrality_1978]. In the ERGM context, we test for network centralization with a geometrically-weighted degree (GWD) term, which measures repulsion of edges from high-degree nodes. In networks where access to innovation is a priority of individuals, we expect to see shorter average path lengths and negative GWD estimates [@levy_gwdegree:_2016].
+
+***Hypothesis 1:** HMPLs will be shorter in empirical networks than simulated random graphs, and GWD estimates in ERGMs will be negative, reflecting a tendency for edges to concentrate on popular actors.*
+
+### Cooperation and triadic closure
+
+In contrast to the classic diffusion of innovation model, there are many agricultural practices for which the payoff is conditional on the actions of others, implying interdependence among farmers.  For example, pest and disease processes spread over property lines, so if one farmer fails to adequately control a disease, the disease prevention efforts of nearby farmers will be less effective. Environmental public goods have similar attributes; for instance, one farmer's efforts to improve water quality by reducing pollution from irrigation runoff will be ineffective unless other farmers in the same watershed also reduce their polluted runoff. These contexts often resemble the strategic structure of a prisoner's dilemma, where cooperation requires overcoming free riding incentives. 
+
+A standard hypothesis within the social capital literature is that closed networks facilitate cooperation by enabling mechanisms of trust and reputation. The classic closed structure is the transitive triangle, where relationships i-j and i-k facilitate the relationship j-k. These structures help maintain reputation and trust by enabling indirect reciprocity and social sanctions for free-riders, and by providing third-party verification of cooperative or uncooperative behavior. In a network where diffusion of innovation is the only important process, the redundant ties in closed triangles would have little value because the information that comes through them is accessible through the shared partner. However, the redundancy of ties that close triangles allows for verification of information, which builds trust, and opens the possibility of social sanctioning, which promotes cooperative behavior [@berardo_self-organizing_2010; @bodin_role_2009-3; @ostrom_governing_1990]. Hence, closed networks are an important component of community-level social capital thought to enable collective action [@coleman_social_1988; @putnam_prosperous_1993]. 
+
+We test for closed network structures first by comparing observed levels of triadic closure to levels found in uniform random graphs of the same size and density, and then via the geometrically-weighted edgewise shared partners (GWESP) statistic in ERGMs to test whether there is a tendency for triadic closure above what would be expected by other tie-formation forces in the network (e.g. regional homophily). In networks where cooperation challenges are being navigated, we expect a large number of complete triangles and positive GWESP estimates.
+
+***Hypothesis 2:** Clustering coefficients will be greater in empirical networks than simulated random graphs, and GWESP estimates in ERGMs will be positive, reflecting a tendency for triadic closure.*
+
+
+### Boundary spanning and structural holes
+
+Another important social process in agroecological and other complex adaptive systems is the transfer of information across specialized components of the system. Different components of the system may develop specialized knowledge or capacities, which then must be linked in order to accomplish different tasks. This argument parallels Burt's concept of structural holes, where individuals whose ties span different parts of the system can access more and a greater variety of resources [@burt_structural_2004]. 
+
+In the context of agriculture, university extension has traditionally filled this role by serving as a bridge between science, policy-makers, and individual agricultural producers. However, this classical model is rapidly being replaced by one of a network of distributed, specialized knowledge, in which both formal outreach professionals and others serve as knowledge brokers [@clark_boundary_2016; @lubell_extension_2014].  For example, most cropping systems in California involve certified Pest Control Advisors or Crop Consultants who specialize in specific aspects of agricultural decision-making, and individual land-owners contract with these specialists to assist the overall farming operation. In other cases, large-scale farming operations create their own in-house expertise. The complex, specialized nature of agricultural knowledge networks challenges the broad stereotype of "one farmer, one farm". Agricultural food systems and innovation systems require sharing of knowledge and coordinated action from many different specialized individuals and organizations [@klerkx_adaptive_2010; @mccullough_evolution_2016; @wigboldus_systemic_2016].
+
+Our networks are comprised of growers and outreach professionals, and some individuals who fall into both categories. We expect that these "outreach-growers" will play a boundary-spanning role because they have specialized knowledge, but at the same time their grower perspective engenders trust from other growers. In network terms, we expect these outreach-growers to occupy positions with high betweenness centrality; that is, they sit on many shortest paths between other actors in the networks. In ERGMs, we expect the outreach-growers to have more connections. 
+
+***Hypothesis 3:** Outreach-growers will have greater betweenness centrality than growers or outreach professionals, and in ERGMs outreach-grower node-attribute estimates will be positive, reflecting their popularity.*
+
+# Results
+
+```{r descriptive stats, include = FALSE}
+sizes = sapply(networks, network.size)
+densities = round(sapply(networks, network.density), 4)
+connected = round(sapply(networks, connectedness), 2)
+centralized = round(sapply(networks, centralization, "degree", mode = "graph"), 3)
+```
+
+As detailed in the method section, our networks are derived from grower surveys in three regions. Individual nodes are growers or outreach professionals (or both), and links represent communication about viticulture management. Sociograms of the three winegrower networks are presented in Figure 1. The Lodi network is the smallest (`r sizes[["Lodi"]]` nodes) and most dense (`r densities[["Lodi"]]`, fraction of possible ties present), connected (`r connected[["Lodi"]]`, fraction of dyads with a path between them), and centralized (`r centralized[["Lodi"]]`, normalized sum of deviation of degrees from the most popular actor) of the three, and Central Coast is largest (`r sizes[["Central Coast"]]` nodes) and least dense (`r densities[["Central Coast"]]`), connected (`r connected[["Central Coast"]]`), and centralized (`r centralized[["Central Coast"]]`), with Napa intermediate on all measures. Additional descriptive statistics and degree distribution plots are presented in supplementary materials.
+
+Outreach professionals and growers both have relatively low betweenness centrality, but individuals who are outreach professionals and themselves growers ("Outreach-Grower") have high betweenness centrality in all three networks (Figure 2, horizontal axis). This is consistent with Hypothesis 3. The vertical axis of Figure 2 presents the coefficient of variation ($\sigma / \mu$) in betweenness centrality. While Growers have consistently low betweenness and Outreach-Growers have consistently high betweenness, Outreach professionals have more variability in their betweenness centrality: on average they have low betweenness, but there are one or more in each region with very high betweenness, generating large coefficients of variation. 
+
+```{r network plots, fig.cap = "Viticulture knowledge networks. Sociograms of viticulture management communication in three California winegrowing regions. Nodes represent individuals and are colored by professional role and sized to popularity (node area is proportional to square-root of degree). Graph layouts were generated by the Fruchterman-Reingold algorithm."}
+cols = structure(rev(viridis(3)), names = c("Outreach", "Grower", "Both"))
+
+par(mfrow = c(1, 3), mar = c(1, 1, 1.7, 1))
+lapply(seq_along(networks), function(i) {
+  plot(networks[[i]]
+       , pad = 0
+       , edge.col = adjustcolor('gray', .7)
+       , vertex.border = 'gray'
+       , vertex.lwd = .35
+       , vertex.col = adjustcolor(cols, alpha = .8)[match(networks[[i]] %v% "Type", names(cols))]
+       , vertex.cex = degree(networks[[i]], gmode = 'graph') ^ (1/2) / 1.5
+  )
+  mtext(names(networks)[i], cex = .8)
+})
+legend(x = 'bottomleft', legend = names(cols), col = 'gray',
+       pt.bg = cols, pch = 21, pt.cex = 2, bty = 'n')
+```
+
+
+```{r betweenness plot, fig.height = 2, fig.cap = "Betweenness centrality by profession and region. For three professional roles in three winegrowing regions, the coefficient of variation ($\\sigma / \\mu$) in betweenness centrality versus the average betweenness centrality."}
+roles = unique(networks[[1]] %v% "Type")
+
+# Loop over roles within networks and calculate the betweenness mean and variance
+btw = 
+  lapply(seq_along(networks), function(net) {
+    df = sapply(X = roles, FUN = function(role) {
+      btw = betweenness(networks[[net]], 
+                        nodes = which(as.logical(networks[[net]] %v% role)),
+                        gmode = 'graph',
+                        rescale = TRUE)
+      data.frame(mean = mean(btw), var = var(btw))
+    }, simplify = FALSE, USE.NAMES = TRUE) %>% 
+      do.call(rbind, .)
+    df$Role = rownames(df)
+    df$region = names(networks)[net]
+    df
+  }) %>%
+  do.call(rbind, .)
+btw$Role = factor(btw$Role, levels = c('Outreach', 'Grower', 'Both'))
+btw$region = factor(btw$region, levels = names(regColors))
+
+ggplot(data = btw, aes(x = mean, y = var ^ .5 / mean)) + 
+  geom_point(aes(fill = region, shape = Role), size = 3) +
+  scale_fill_manual(values = regColors, name = 'Region'
+                    , guide = guide_legend(override.aes = list(shape = 21))
+  ) +
+  scale_shape_manual(name = "Role", values = c(21, 24, 22)
+                     , guide = guide_legend(override.aes = list(fill = "lightgray"))
+  ) +
+  xlab("Mean Betweenness Centrality") + 
+  ylab("Coefficient of Variation") +
+  ylim(c(0, NA)) +  xlim(c(0, NA)) +
+  theme(aspect.ratio = 1, legend.box = "horizontal")
+```
+
+
+## Random Graph Comparisons
+
+```{r CUG tests}
+# Generate or load the random graph simulation data.
+# On my laptop, simulations take ~0.5 sec / nsim = ~8 minutes for 1000 sims
+nsim = 1e3
+
+if(!file.exists("data/CUGsims.RDS")) {
+  
+  set.seed(42369)
+  
+  cl = makeCluster(nClusters, type = 'FORK')  
+  
+  sims =
+    parLapply(cl, seq_along(networks), function(i) {
+      m = ergm(networks[[i]] ~ edges)
+      sims = simulate(m, nsim, constraints = ~ edges + ~bd(minout = rep(1)))
+      
+      # Loop over simulated networks and measure statistics
+      lapply(sims, function(n) {
+        data.frame(clustering = clusteringCoef(n),
+                   degCent = centralization(n, "degree", mode = "graph"),
+                   HMPL = HMPL(n),
+                   region = names(networks)[i])
+      }) %>%
+        do.call(rbind, .)
+    }) %>% do.call(rbind, .) %>%
+    gather(stat, value, -region) 
+  
+  stopCluster(cl)
+  
+  saveRDS(sims, "data/CUGsims.RDS")
+  
+} else {
+  sims = readRDS("data/CUGsims.RDS")
+}
+
+# Calculate observed values
+obs = 
+  lapply(seq_along(networks), function(i)
+    data.frame(clustering = clusteringCoef(networks[[i]]),
+               degCent = centralization(networks[[i]], "degree", mode = "graph"),
+               HMPL = HMPL(networks[[i]]),
+               region = names(networks)[i])
+  ) %>%
+  do.call(rbind, .) %>% 
+  gather(stat, value, -region)
+width = .35
+obs$hline1 = as.integer(obs$region) - width
+obs$hline2 = as.integer(obs$region) + width
+
+# Calculate p-values
+obs$pGreater = sapply(1:nrow(obs), function(i) 
+  sum(obs$value[i] > semi_join(sims, obs[i, ], by = c("region", "stat"))$value) / nsim)
+```
+
+As initial tests of tendencies for triadic closure and popularity effects, we conducted conditional uniform random graph tests that compare the empirically observed clustering coefficients, degree centralizations, and average path lengths to the distribution of the same statistics in `r nsim` simulated uniform-edge-probability random graphs of the same size and density as the observed networks. The basic intuition of these tests is to generate random graphs that correspond to an assumption of structure unaffected by social processes. If structural configurations representing the hypothesized social processes are present in the empirical networks at a significantly higher frequency than in the random graphs, that is an indication of social processes structuring the empirical networks.
+
+Network centralization is greatest in Lodi and least in Central Coast, and in all three regions, the observed level of centralization was greater than in any simulated graph (Figure 3a). The empirical networks feature a few highly popular actors, more popular than any nodes in the random graphs. In terms of distances between dyads, Central Coast has the longest average path length, and the observed HMPL in Central Coast falls squarely in the middle of the distribution of random graphs ($p(observed > simulated) = `r round(obs$pGreater[obs$region == "Central Coast" & obs$stat == "HMPL"], 2)`$; Figure 3b). In Napa and Lodi, where the observed path lengths are shorter, all of the simulated graphs had greater HMPLs than the empirical network. These results are consistent with Hypothesis 1, except in the case of the Central Coast where path lengths are relatively long; we return to this point in the discussion. 
+
+In the observed networks, Lodi has the greatest clustering coefficient, while Central Coast and Napa have less clustering. The conditional uniform random graph tests demonstrate that the observed networks have far more clustering than expected by random tie formation: no simulated graph in any region has a greater clustering coefficient than the observed value (Figure 3c). These results are consistent with Hypothesis 2. 
+
+```{r plot CUG tests, fig.height = 2.5, fig.cap = "Simulated random networks (boxplots) versus observed networks (red $\\times$) for three graph-level statistics: degree centralization (a), harmonic-mean path length (b), and clustering coefficient (c)."}
+
+facetLabels = c(degCent = "Degree Centralization",
+                HMPL = "Harmonic Mean Path Length",
+                clustering = "Clustering Coefficient")
+
+sims$region = factor(sims$region, levels = rev(levels(sims$region)))
+lapply(names(facetLabels), function(stat) 
+  ggplot(sims[sims$stat == stat, ], aes(x = region, y = value, fill = region)) +
+    geom_boxplot(outlier.size = .7) + 
+    scale_fill_manual(values = regColors, name = "Region", guide = "none") +
+    geom_point(data = obs[obs$stat == stat, ], color = "firebrick", size = 2, shape = 4) +
+    scale_shape_manual(name = "", values = "solid") + 
+    xlab("") + ylab(facetLabels[names(facetLabels) == stat]) +
+    coord_flip() 
+) %>%
+  plot_grid(plotlist = ., labels = letters[1:3], ncol = 1)
+```
+
+
+## Exponential Random Graph Models
+
+```{r ERGMs}
+# MCMC parameters:
+samplesize = 1e4
+interval = 5e3
+
+if(!file.exists("data/models.RDS")) {
+  
+  set.seed(583754)
+  
+  # This takes around four hours on my laptop.
+  start = Sys.time()
+  
+  cl = makeCluster(nClusters, type = 'FORK')  
+  
+  ergms = parLapply(cl, seq_along(networks), function(net) {
+    ergm(networks[[net]] ~ 
+           gwdegree(fixed = TRUE, decay = 3) + 
+           gwesp(fixed = TRUE, alpha = .7) +
+           nodecov("Survey_respondent") +
+           nodecov("Outreach") + nodecov("Both") +
+           edgecov(networks[[net]] %n% "knownZipMatch") +
+           edgecov(networks[[net]] %n% "possibleZipMatch"),
+         constraints = ~ edges + bd(minout = 1),
+         control = control.ergm(MCMLE.maxit = 50, 
+                                MCMC.interval = interval, MCMC.samplesize = samplesize)
+    )
+  })            
+  
+  stopCluster(cl)
+  saveRDS(ergms, "data/models.RDS")
+  
+  elapsed = Sys.time() - start
+  write(paste("ERGM estimation took", round(elapsed, 1), attr(elapsed, "units"), "\n"),
+        "timing.txt")
+  
+} else {
+  ergms = readRDS("data/models.RDS")
+}
+
+# Organize model table
+ord = c(1, 2, 4, 5, 6, 7, 3)  
+ergmTable = stargazer(ergms, digits = 2, omit = "isolates", 
+                      title =  "Parameter estimates for ERGMs of viticulture knowledge networks. Outreach, Outreach-Grower and Respondent are main-effect terms. Geographic terms are homophily effects at the zip-code level.",
+                      order = ord,
+                      covariate.labels = c("Anti-centralization (GWDegree, $\\theta_s = 3.0$)",
+                                           "Triangles (GWESP, $\\theta_t = 0.7$)",
+                                           "Survey respondent",
+                                           "Outreach", 
+                                           "Outreach-Grower",
+                                           "Shared zip-code",
+                                           "Possibly shared zip-code")[ord],
+                      model.numbers = FALSE, 
+                      column.labels = names(networks),
+                      dep.var.labels = "",
+                      omit.stat = c("aic", "bic"), 
+                      dep.var.caption = "", model.names = FALSE,
+                      notes.label = "",
+                      star.cutoffs = c(.05, 1e-2, 1e-3)
+)
+
+# Remove warnings that sneak into table from `ergm` 
+ergmTable = ergmTable[grep("begin\\{table", ergmTable):length(ergmTable)]
+
+# Add intermediate rows and display
+ergmTable = c(ergmTable[1:9], "\\\\ \\textbf{Structural Terms}\\\\",
+              ergmTable[10:15], "\\\\ \\textbf{Professional Role} (vs. Grower)\\\\",
+              ergmTable[16:21], "\\\\ \\textbf{Geography} (vs. Known-different zip-codes)\\\\",
+              ergmTable[22:27], "\\\\ \\textbf{Control} \\\\", ergmTable[28:36])
+
+```
+
+```{r ERGM marginal effects setup, include=FALSE}
+
+coefs = lapply(ergms, broom::tidy)
+gwds = sapply(coefs, function(m) m$estimate[grep("gwd", m$term)])
+gwesps = sapply(coefs, function(m) m$estimate[grep("gwesp", m$term)])
+
+GWDOddsChange = function(k, theta = gwds, theta_s = 3) {
+  # k is the lower-degree node's degree. I.e. calculate change in odds for k+1 vs k
+  # theta is vector of gwd estimates (across networks)
+  relOdds = 
+    deltaGWD(c(k, k + 1), theta_s) %>%
+    diff() %>%  # Diff is second minus first -- want difference between k + 1 and k
+    `*`(theta) %>%
+    exp()
+  textVals((relOdds - 1) * 100)
+}
+
+textVals = function(vals) {
+  vals = round(vals, 0)
+  paste0(vals[1], ", ", vals[2], ", and ", vals[3], "%")
+}
+
+```
+
+
+The ERGMs test for each social process while controlling for the others as well as geography and aspects of the data collection process. Table 1 presents ERGM parameter estimates which, like logistic regression, reflect the increase in the log-odds of a tie for a unit change in the associated statistic. 
+
+Consistent with Hypothesis 1, in all three regions GWD estimates were significantly negative, indicating a tendency for actors to form ties with popular actors. At the aggregate level, this creates centralized networks with short paths between nodes. The way GWD is formulated makes this effect stronger among lower-degree nodes, but the relatively large $\theta_s$ value of 3 gives the statistic significant action over the full range of observed degrees [@levy_gwdegree:_2016]. For example, in Central Coast, Napa, and Lodi respectively, the odds of an edge are `r GWDOddsChange(2)` greater on a degree-2 node than a degree-1 node, and `r GWDOddsChange(12)` greater on a degree-12 node than a degree-11 node. 
+
+Consistent with Hypothesis 2, the positive coefficient estimates on GWESP indicate a consistent, strong force for triadic closure in all three regions. Specifically, relative to having no shared partners, the odds of a tie between two people with a single shared partner are `r textVals((exp(gwesps) - 1) * 100)` greater in Central Coast, Napa, and Lodi, respectively. Additional shared partners make ties even more likely, but the geometric weighting of GWESP implies a diminishing effect for each subsequent partner.
+
+Reflecting the boundary-spanning role posited in Hypothesis 3, in all three regions, Outreach-Growers have greater tie propensity than Growers or Outreach professional. *Ceteris Paribus*, in Napa, Outreach professionals are substantially less popular than Growers, while in Lodi, Outreach professionals are somewhat more popular than Growers. Finally, there is strong regional homophily at the zip-code level in all regions. Goodness-of-fit and other model assessments are presented in supplementary material. 
+
+```{r ERGM table, results = "asis"}
+cat(ergmTable)
+```
+
+## Modeled Edge Probabilities
+
+To provide intuition on the implications of the ERGM estimates, we calculate the model-implied probability of every possible edge in each of the networks and then parse the probabilities by nodal and dyadic attributes of interest (per Equation 4). The raw parameter estimates and relative odds presented above speak to the effect of a single feature of the networks independent of all others; in contrast, these edge probabilities simultaneously account for all network statistics associated with a particular edge. For example, if two actors live in the same zip-code and have shared partners, the effects of both are reflected in the probability of an edge between them, and correlations between shared zip-codes and shared partners will appear in these probability distributions, whereas the ERGM coefficients for shared zip-code and shared partners tease apart those two effects. 
+
+Figure 4a shows the probabilities of all possible edges versus the degree of an edge's nodes. For example, the left-most box-and-whiskers presents the distribution of probabilities of all possible edges to all degree-1 nodes, the next box-and-whiskers shows the probabilities of possible edges on all degree-2 nodes, etc. In general, there is a positive popularity effect, with edge probabilities increasing with node degree, albeit with decreasing marginal effect. Figure 4b shows the dramatic positive effect of shared partners on tie probability. Across the three networks, actors who share three contacts are an order of magnitude more likely to be connected than actors with no common contacts. Figure 4c shows that ties involving Growers are more likely than ties involving Outreach professionals, and ties involving Outreach-Growers are substantially more likely still. 
+
+
+```{r edge probabilities}
+
+if(!file.exists("data/edgeProbs.RDS")) {
+  set.seed(83758)
+  
+  # This takes around eight hours on my laptop.
+  start = Sys.time()
+  
+  # Compile the function to pickup a little speed. 
+  pEdgeC = compiler::cmpfun(pEdge)
+  
+  edgeProbs = 
+    lapply(seq_along(ergms), function(i) {
+      
+      model = ergms[[i]]
+      net = model$network
+      el = structure(expand.grid(replicate(2, 1:network.size(net), FALSE)), 
+                     names = c('node1', 'node2')) %>%
+        filter(node1 < node2)  # Calculate each undirected dyad only once
+      
+      # Split the edgelist in nCluster parts for parallel computation
+      el = split(el, rep(1:nClusters, len = nrow(el)))
+      
+      # Parallel-lapply over the splits, calculate probs, then rbind back together
+      cl = makeCluster(nClusters, type = 'FORK')  
+      el = 
+        parLapply(cl, el, function(edgelist) {
+          pEdgeC(model, edgelist = edgelist)
+        }) %>%
+        do.call(rbind, .)
+      stopCluster(cl)
+      
+      # Attach nodal and dyadic attributes
+      degs = degree(net, gmode = 'graph')
+      el$k1 = degs[el$node1]
+      el$k2 = degs[el$node2]
+      
+      # Role
+      el$role1 = (net %v% 'Type')[el$node1]
+      el$role2 = (net %v% 'Type')[el$node2]
+      
+      # Shared partners
+      sp = igraph::bibcoupling(intergraph::asIgraph(net))
+      el$sp = sapply(1:nrow(el), function(r) sp[el$node1[r], el$node2[r]])
+      
+      el$region = as.factor(rep(names(networks[i])))
+      
+      return(el)
+      
+    })
+  
+  saveRDS(edgeProbs, "data/edgeProbs.RDS")
+  
+  elapsed = Sys.time() - start
+  write(paste("\nEdge probabilites took", round(elapsed, 1), attr(elapsed, "units"), "\n"),
+        "timing.txt", append = TRUE)
+  
+} else {
+  edgeProbs = readRDS("data/edgeProbs.RDS")
+}
+```
+
+```{r plot edge probabilities, fig.height = 4, fig.cap = "Edge probabilities implied by exponential random graph models. For each region, the probability of a tie for each dyad in the network was calculated according to Equation 4. Edge probabilities were then parsed three ways: degree of the actors (a), number of partners shared by the actors (b), and professional role of the actors (c)."}
+ps = do.call(rbind, edgeProbs)
+
+logticks = annotation_logticks(sides = 'l'
+                               , short = unit(0.05, "cm"), mid = unit(0.1, "cm")
+                               , long = unit(0.15, "cm")
+)
+logticks$data <- data.frame(x = NA, region = 'Central Coast')
+
+# Shared partners
+spPlot = 
+  ggplot(ps, aes(x = as.factor(sp), y = p, fill = region, group = sp)) + 
+  geom_boxplot(outlier.colour = NA) +
+  scale_fill_manual(values = regColors, guide = 'none') +
+  scale_y_log10(name = "Edge Probability") + logticks +
+  facet_wrap(~ region) +
+  xlab('Number of Shared Partners')
+
+# Degree
+kps = rbind(select(ps, Degree = k1, p, region), select(ps, Degree = k2, p, region))
+degPlot = 
+  ggplot(kps, aes(x = Degree, y = p, fill = region, group = Degree)) + 
+  geom_boxplot(outlier.colour = NA) +
+  scale_fill_manual(values = regColors, guide = 'none') +
+  scale_y_log10(name = "Edge Probability") + logticks +
+  facet_wrap(~ region) +
+  xlab('Degree') 
+
+# Roles
+roleps = rbind(select(ps, Role = role1, p, region), select(ps, Role = role2, p, region))
+roleps$Role = factor(roleps$Role, levels = c('Outreach', 'Grower', 'Both'))
+rolePlot = 
+  ggplot(roleps, aes(x = Role, y = p, fill = region, group = Role)) + 
+  geom_boxplot(outlier.colour = NA) +
+  scale_fill_manual(values = regColors, guide = 'none') +
+  scale_y_log10(name = "Edge Probability") + logticks +
+  facet_wrap(~ region) +
+  xlab('Professional Role') +
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))
+
+ggdraw() + 
+  draw_plot(degPlot, 0, .5, 1, .5) +
+  draw_plot(spPlot, 0, 0, .5, .5) +
+  draw_plot(rolePlot, .5, 0, .5, .5) +
+  draw_plot_label(letters[1:3], fontface = 'bold',
+                  c(0, 0, .5), c(1, .5, .5), size = 12)
+```
+
+
+
+# Discussion
+
+We analyzed vineyard management networks for structural patterns that support three key social processes for sustainable agroecological systems: diffusion of innovation, cooperation, and boundary-spanning. The results are consistent with all three hypotheses. Diffusion of innovation is supported by networks with short path lengths and high levels of centralization, which are evidenced by negative GWD estimates in ERGMs (Table 1) that reflect the tendency for links to go popular actors. At the same time, we find closed network structures that support cooperation, where individuals are forming closed triangles at levels exceeding chance, leading to networks with high levels of clustering (Figure 3c) and positive GWESP estimates in ERGMs. Finally, in each region there are a few (non-grower) outreach professionals in highly central positions, but many more with only a few connections (Figure 2). In contrast, outreach professionals who are themselves growers are highly popular and fill structural holes in all three networks. These individuals span boundaries of the networks across groups that would otherwise be poorly connected. 
+
+The results also suggest some important differences across regions that reflect the geographic structure of agroecological systems.  These geographic differences reflect the way in which winegrape regions are locally organized around American Viticultural Areas (AVAs), which provide administrative recognition to the terroirs that simultaneously confer unique attributes to local grapes while also fostering a regional identity and sense of community among growers. 
+
+Specifically, the Central Coast network has relatively long paths between actors compared to Lodi and Napa, which reflects the fact that the Central Coast is a large geographic region encompassing 11 counties and multiple disconnected AVAs. As as result, 27% of dyads in the Central Coast network have no path between them (the mean among corresponding simulated networks is 11%). At the same time, there is stronger spatial homophily (links between actors in the same zip-code) in Central Coast than the other regions (Table 1). In addition, for dyads that are not extremely far from each other in network space (less than ~12 edges on the shortest path), empirical paths are substantially shorter than paths in the simulated networks. Thus, information is likely to rapidly diffuse locally in all three regions; it is only across vast network distances that diffusion may be slower in Central Coast. 
+
+From a theoretical perspective, the key advancement of this paper is to highlight how social networks support multiple social processes at the same time, not just one of the more traditional models such as diffusion of innovation or cooperation. The ERGMs demonstrate the co-existence of structures that support more than one process, and it is important to note that our models take an epistemological stance of explicitly linking model parameters to hypotheses rather than including parameters just for the purpose of model fit. 
+
+From a substantive and policy perspective, our results reinforce the importance of policies and programs that catalyze the multiple functions of agricultural networks. Consider for instance agricultural outreach professionals, who have traditionally been key actors for translating agricultural science into grower behavior. To be effective, agricultural outreach professionals cannot simply broadcast knowledge; they should strategically assemble or "weave" networks [@lubell_extension_2014; @vance-borland_conservation_2011]. Agricultural outreach professionals can develop programs that explicitly intervene in networks, by targeting communication at central leaders or brokers, identifying network subgroups with different communication needs or potential for linkages, or creating new network links for open or closed structures depending on whether the goal is spreading information or fostering cooperation [@valente_network_2012]. Governing institutions like land grant universities or other types of agricultural extension systems should reward outreach professionals for engaging in these types of network-smart strategies [@hoffman_network-smart_2015]. 
+
+Clark et al (p. 4572) echo this point in their discussion of innovation systems, where "reformers have called for and implemented more collaborative, iterative, and interactive models of innovation that acknowledge the importance of coproduction relationships between knowledge-making and decision-making. The systemic perspective emphasizes that for success in crafting usable knowledge, researchers must understand the need to work together not only with ultimate users and decision makers, but also with a host of other actors involved in performing the multiple tasks of a well-functioning innovation system: funders, entrepreneurs, field evaluators, etc." [@clark_crafting_2016]. Our results provide direct empirical evidence in support of these conceptual frameworks and policy recommendations. 
+
+Agroecological systems are a subset of social-ecological systems, which in turn are a subset of complex adaptive systems. The sustainability and resilience of complex adaptive systems depends on having properties that enable them to learn in the face of uncertainty, self-organize, and link together multiple specialized components of the system. Social networks that encompass these multiple types of processes thus constitute a multiplex conceptualization of social capital. By empirically demonstrating the existence of these different types of network structures, we hope our study will inspire comparative research across different types of social-ecological systems. Such comparative research will be especially valuable if it measures dynamic changes over time, especially how structural properties vary and link to social, environmental, and economic outcomes.  
+
+# Materials and Methods
+
+### Study system, data, and software
+
+Winegrowers and viticulture-outreach professionals in three wine growing regions were extensively surveyed as part of a broader project; complete survey details are available in ref [@hoffman_linking_2014]. Briefly, surveys were administered in 2011 for Lodi and 2012 for Napa and Central Coast. Growers were identified from county Agriculture Commissioners' Pesticide Use Reports, and additional eligible growers and outreach professionals were identified through snowball methods. Surveys were issued by mail and non-respondents were asked several times to respond.
+
+Networks were constructed from survey questions that asked respondents to list up to eight growers and up to eight other individuals with whom they communicate about viticulture management in decreasing order of frequency of communication in Napa and Central Coast and up to four of each in Lodi. To enable comparisons across regions, only the first four individuals listed in each category for Napa and Central Coast were used. Edges are treated as undirected and dichotomous. Isolates were removed from the dataset. Each node in the networks was assigned an attribute type based on whether they are exclusively a grower, exclusively an outreach professional, or both a grower and outreach professional, based on county records and survey question responses. Network data were manually cleaned to merge duplicate entries, correct misspellings, etc. Network summary statistics and degree distribution plots are presented in the supplementary information.
+
+All analyses were performed in R version 3.3.1 [@r_core_team_r:_2016] using the statnet suite of packages, version 2016.4 [@handcock_statnet:_2016; @handcock_statnet:_2008]. To improve transparency and reproducability, all analyses are contained in a single R Markdown file, which is permanently archived with the complete dataset through the Open Science Framework at https://osf.io/sntgc/.
+
+### Random Graph Comparisons
+
+For each region, we simulated `r nsim` random graphs with uniform edge probability and the same size and density as the observed network, constrained to have no isolates, because isolates were removed from the empirical networks. For each simulated and observed graph, we calculated three graph-level statistics: normalized degree centralization, harmonic-mean path length, and clustering coefficient. For eight of the nine comparisons, no simulated graph's statistic exceeded the observed value; for the one that did (HMPL in Central Coast), the reported p-value is the fraction of simulated graphs with a smaller HMPL than the observed level.
+
+### Exponential random graph models
+
+In an ERGM the network is the outcome variable and the local processes that are hypothesized to generate it, measured as network-level statistics, are the predictor variables. The random graph comparisons described above test one network structure at a time, but it is possible that a single deviation from independence of edge probability drives multiple network-level statistics into the tail of distributions expected under edge independence. For example, a popularity effect will lead to an abundance of closed triangles, even in the absence of a per se triadic closure force [@levy_gwdegree:_2016]. ERGMs guard against this by estimating parameters on a set of network statistics that jointly maximize the likelihood of generating networks with the observed values of the statistics. The ERGM likelihood is:
+
+\begin{align}
+P(Y = \mathbf{y}) = \dfrac{exp(\theta^\top\Gamma(\mathbf{y}, x_y))}
+{\sum_{z \in \mathcal{Y}}exp(\theta^\top\Gamma(\mathbf{z}, x_z))}, \mathbf{y} \in \mathcal{Y}
+\end{align}
+
+where $\Gamma$ is a vector of sufficient statistics calculated on the network $\mathbf{y}$ and covariate information on the network $x_y$, $\theta$ is the corresponding vector of parameter values, and $\mathcal{Y}$ is the set of possible networks [@frank_markov_1986; @lusher_exponential_2012; @morris_specification_2008].
+
+For each of the three regions, we estimated an ERGM with terms for the geometrically-weighted degree distribution (GWD) and geometrically-weighted edgewise shared partner distribution (GWESP). The geometrically-weighted statistics are sums with decreasing weights for additional units on a given node or edge. For example, any edge augments the GWD statistic, but if the edge is added to higher degree nodes, the statistic increases less than if it were added to a lower degree node. Thus, GWD "may be thought of as a sort of anti-preferential attachment model term" [@hunter_curved_2007], and in this manner parameterizes the degree distribution of a network. The rate of decreasing return as edges are added to higher degree nodes is governed by the $\theta_s$ decay parameter. Small values of $\theta_s$ yield a greater disparity between edges to low- and high-degree nodes. For intuition on the relationship between GWD, $\theta_s$, and the degree distribution, see ref [@levy_gwdegree:_2016]. GWESP is similar to a statistic that counts the number of edges with a shared partner (i.e. three times the number of triangles), but with decreasing effect of each shared partner after the first. The rate of decrease is controled by $\theta_t$, with smaller values producing a rapidly diminishing effect of additional shared partners. Specifically, the GWD and GWESP statistics are given by:
+
+\begin{align}
+GWD = e^{\theta_s} \sum_{i=1}^{N-1}[1-(1-e^{-\theta_s})^{i}]D_i(\mathbf{y});
+\end{align}
+
+\begin{align}
+GWESP = e^{\theta_t} \sum_{i=1}^{N-2}[1-(1-e^{-\theta_t})^{i}]EP_i(\mathbf{y}),
+\end{align}
+
+where $D_i$ is the number of nodes of degree $i$ and $EP_i$ is the number of edges with $i$ shared partners. We fixed decay parameter values and held them constant across all three networks to facilitate comparison of the parameter estimates. For GWD, $\theta_s = 3.0$ ensures that the statistic captures popularity effects among high degree nodes. For GWESP, $\theta_t = 0.7$ produces a moderately declining marginal effect of shared partners.
+
+The models also included main-effect terms for nodal attributes: whether the individual was a grower (baseline category, "Grower"), an outreach professional ("Outreach"), or both ("Outreach-Grower"), and, as a control, whether or not the individual was a survey respondent ("Respondent"). The tendency to link to spatially local actors was accounted for by including a homophily term for whether the two individuals in a dyad are in the same zip-code. Because we lack information about the location of some individuals, we include two terms: one where we know the two individuals are in the same zip-code, and one for which we don't have a zip-code for one or both individuals; both are compared to the base-case in which the two are known to be in different zip-codes. Rather than include a density term in our models, we constrained the number of edges in the candidate graphs to be the same as the empirical networks. This helped circumvent the degeneracy issues that plague ERGMs [@handcock_assessing_2003]. 
+
+We obtained parameter estimates for our ERGMs using Markov chain Monte Carlo maximum likelihood estimation (MCMCMLE) [@handcock_statnet:_2016; @hunter_ergm:_2008]. For each network, we used a burn-in interval of `r format(interval * 16, big.mark = ",", trim = TRUE)` draws followed by `r format(samplesize, big.mark = ",", trim = TRUE)` samples taken at an interval of `r format(interval, big.mark = ",", trim = TRUE)` draws. MCMC and goodness-of-fit diagnostics are presented in the supplementary material; in short, graphs simulated from the models fit the empirical networks well and MCMC chains were stationary and well mixed. 
+
+
+### Modeled edge probabilities
+
+To better interpret the ERGM parameter estimates, we calculated probabilities of edges based on the ERGM estimates. The probability of observing a tie between nodes $i$ and $j$ is:
+
+\begin{align}
+P(y_{ij} | \mathbf{y}_{ij}^-, \theta) = logistic(\theta^\top \delta_{\Gamma}(\mathbf{y}_{ij})),
+\end{align}
+
+where $\delta_{\Gamma}(\mathbf{y}_{ij})$ is a vector of change statistics associated with the $ij$ edge given by $\Gamma(\mathbf{y}_{ij}^+) - \Gamma(\mathbf{y}_{ij}^-)$, where $\mathbf{y}_{ij}^+$ is the network with the $ij$ tie present and $\mathbf{y}_{ij}^-$ with the $ij$ tie absent, and logistic is the inverse logit function: $(1+e^{-x})^{-1}$ [@hunter_ergm:_2008; @desmarais_micro-level_2012].
+
+We calculated the probability of every possible edge in each of the networks and then parsed the probabilities by nodal and dyadic attributes for analysis. Parsing edge probabilities by nodal attributes (profession and degree) results in each dyad being included twice, once for each actor in the dyad.
+
+# References

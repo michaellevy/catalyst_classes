@@ -1,0 +1,6 @@
+What's needed?
+
+1. Calculate the number of medications given per day for all patients.
+2. Assign the number of medications per day to a new column in the data frame.
+3. Subset the number of medications per day to a) for those who were readmitted, and b) those who were not.
+4. Calculate the mean number of medications per day for both of the subsets.

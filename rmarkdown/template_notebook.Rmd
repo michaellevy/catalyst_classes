@@ -1,0 +1,141 @@
+---
+title: "Template"
+author: "Your Name"
+date: "`r format(Sys.time(), '%Y-%m-%d')`"
+# A couple alternative output formats. Only one should be un-commented
+# output: html_notebook
+# output: word_document
+# output: html_document
+output:
+  tufte::tufte_html: default
+---
+
+This is an RMarkdown document. To render it to an html file, click the "Knit" button at the top of this window, or press control/command-shift-k.
+
+What you see here will be rendered as plain text.
+
+The header at the top between the triple-dashes is called YAML. It provides meta-data about the document and will rendered at the top of the output.
+
+R code is included with the following syntax, which is called a "code chunk". Both the code and its output are printed by default. The keyboard shortcut to create a code chunk is command-option-i on OS X and control-alt-i on Windows.
+
+Sample five letters with probability in proportion to their position in the alphabet:
+
+```{r}
+set.seed(9474)
+sample(x = LETTERS, size = 5, prob = 1:26)
+```
+
+
+## The Trickiest Thing
+
+The most common gotchya with RMarkdown is that when you "Knit" the document, only the data and packages that you have loaded *in the document* will be available. Things you have loaded elsewhere will not be, even if they are available while you are composing the document. One way to avoid problems with this is, when you want to work in a .Rmd file, start a new R session (open R Studio). This will remove everything from your global environment; you'll start from scratch. Pro-tip: Open R Studio by double-clicking on the .Rmd file to set the proper working directory. Now you can execute the code chunks from top to bottom as you write and the same data and packages will be available while you're editing as when you eventually knit the document. 
+
+The following code chunk is an example of what you might have near the top of a .Rmd file to get your environment setup. The next code chunk will only work if the one before it did.
+
+```{r, warning = FALSE, message = FALSE}
+library(tidyverse)
+heart_data <- read_csv("data/heart_disease_clean.csv")
+```
+
+```{r}
+count(heart_data, narrowing_num_vessels) %>%
+  knitr::kable(caption = "This is my table.", align = "rc")
+```
+
+At the top of each code chunk, the down-arrow-and-green-bar means "run all the code chunks above this one". The right-arrow means "run this entire code chunk" (or command/control-shift-enter). The gear let's you easily set options for the code chunk, such as the instructions not to print warnings or messages in the last chunk.
+
+You can control whether the results of your code appear in the console or in the .Rmd document by toggling Tools -> Global Options -> R Markdown -> Show output inline for all R Markdown documents.
+
+## Markdown
+
+Markdown tries to be a very simple text formatting language. For example, text is *italicized with single astricks*, **bolded with double astricks**, and ~~struckout with double tildes~~. Headers are constructed with #'s, and each additional # means one level further down:
+
+# Largest Header
+
+###### Smallest header
+
+You can make bullet points lists like this:
+
+- a bullet
+- another
+    - and a sub-bullet
+    
+And numbered lists like this:
+
+1. First
+1. Second
+    1. First second?
+    1. Second second?
+1. Third
+    
+You can also include images:
+
+![Making it rainbow!](https://media.giphy.com/media/3o7TKDhgKC52OZhV0k/giphy.gif)
+
+If you're familiar with LaTeX equations, you can use them in RMarkdown, either inline like this: $\beta = x^2$, or on their own lines like this:
+
+$$
+\psi(x) \ge \!\!\!\!\sum_{x^{1-\varepsilon}\le p\le x}\!\!\!\! \log p\ge\!\!\!\!\sum_{x^{1-\varepsilon}\le p\le x}\!\!\!\!(1-\varepsilon)\log x=(1-\varepsilon)\left(\pi(x)+O\left(x^{1-\varepsilon}\right)\right)\log x
+$$
+
+
+## R Options
+
+What follows is a code chunk. By default the code and its results will be displayed:
+
+```{r}
+heart_data %>%
+  filter(age < 35)
+```
+
+You can turn off the code printing with `echo = FALSE` to just display the results. Notice that the code doesn't appear; just the plot.
+
+```{r, echo = FALSE} 
+ggplot(heart_data, aes(x = sex)) + 
+  geom_bar()
+```
+
+You can specify many aspects of your code output, for example the size of a plot and its caption.
+
+```{r, echo = FALSE, fig.height = 3, fig.width = 2, fig.cap = "This looks better, doesn't it?"}
+ggplot(heart_data, aes(x = sex)) + 
+  geom_bar()
+```
+
+To print code without executing it, use `eval = FALSE`:
+
+```{r, eval = FALSE}
+stop("I am just example code. I will never be evaulated!")
+```
+
+```{r, include = FALSE}
+print("This is secret code!")
+```
+
+```{r, results="hold"}
+
+```
+
+
+You can also render r code in-line, e.g. if you wanted to know that the average age is `r round(mean(heart_data$age), 1)`.
+
+## Intercode
+
+```{r}
+library(leaflet)
+leaflet() %>%
+  addProviderTiles("OpenTopoMap") %>%
+  addMarkers(lat = 40.632991, lng = -111.803945, label = "Us!")
+
+```
+
+
+
+## Further Reading
+
+More on RMarkdown [here](http://rmarkdown.rstudio.com/).
+
+And on `knitr`, the compiling engine that controls options, [here](https://yihui.name/knitr/).
+
+Also, see Help -> Cheatsheets -> R Markdown Reference Guide & R Markdown Cheatsheet
+

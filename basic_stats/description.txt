@@ -1,0 +1,14 @@
+The next data science training will demonstrate how to add rigor to your analyses with simple statistical tests. This will be relatively light on statistical theory and will instead focus on applying statistics: when and how to use various tests and how to interpret and present the results. We’ll cover 
+
+common summary statistics, 
+correlation, 
+t-tests, 
+chi-squared, 
+simple and multiple linear regression, 
+interaction effects, 
+using confidence intervals, 
+interpreting p-values, and 
+making predictions. 
+I’ll also point to how to do logistic regression and other generalized linear models and discuss how these types of models relate to machine learning models.
+
+Prerequisite knowledge for this is basic R syntax, which you can catch up on with this recording of our R Foundations class. We will use ggplot2 as well, but not knowing ggplot2 won’t hinder your learning. As always, come with a machine with current installations of R and R Studio and be sure to join the data-science-training Slack channel.

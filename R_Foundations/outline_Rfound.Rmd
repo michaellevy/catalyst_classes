@@ -1,0 +1,227 @@
+---
+title: "R Foundations"
+author: "Michael Levy"
+date: "July 12, 2017"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(eval = FALSE)
+```
+
+
+MCQ: http://tinyurl.com/hc-rfound-mcq  
+Live script: http://tinyurl.com/hc-rfound  
+Feedback: http://tinyurl.com/hc-rfound-feedback
+
+- Today is going to be boring. Sorry.  
+- Going to be a few intermediate concepts thrown in. Don't worry.  
+    - Bonus questions are meant for folks with experience in R. Don't worry.  
+- Invite Qs. I'll head them off if they're too advanced or whatever.
+
+### Why R?
+
+**Slide: Why R?**
+
+### RStudio
+
+- Panes
+- Make script
+- Options -> Pane layout
+- Calculator: 
+    - console
+    - ctrl-enter
+          - highlighting
+          - current line
+    - ctrl-shift-enter for whole script. End goal!
+- Save script (plain text)
+
+### Variables and assignment
+
+- printing vs. assigning
+    - `(x <- 2)`
+- assign -> environment
+- usefulness vs. hard-coding
+- reassignment
+
+**MCQ: Assignment**  
+
+- On return show function creation for truffle price
+
+### Data types
+
+Three basic types:
+
+1. Logical
+1. Numeric (integers, doubles, etc.)
+1. Character  
+    - Unquoted variables, quoted strings
+
+Logical comparison
+
+Data containers:
+
+**Slide: data structures**
+
+### Functions & Arguments
+
+```{r}
+c(2, 4, 6, 8)
+sum(2, 4, 6, 8)
+evens <- c(2, 4, 6, 8)
+evens
+sum(evens)
+sqrt(evens) 
+```
+
+Just saw two types of vectorized functions
+
+Can also vectorize over multiple vectors:
+
+```{r}
+odds = c(1, 3, 5, 7)
+evens + odds
+evens - odds
+```
+
+#### Vector comparisons
+
+```{r}
+evens > odds
+evens == 4  # recycling
+```
+
+Other ways to create vector:
+
+```{r}
+1:100
+letters; LETTERS
+```
+
+Vectorization makes R fast. `mean(1:1e8)`
+
+
+
+### Multiple arguments
+
+*Don't do help here*
+
+```{r}
+rep(3, 4)
+rep("abc", 5)
+```
+
+### Named arguments and Getting help
+
+```{r}
+rnorm(10, 100, 10)
+rnorm(n = 10, mean = 100, sd = 10)
+rnorm(10)  # Shout-out: What are mean and sd and how did R know?
+```
+
+- `?rnorm`  
+- Show rbinom, pbinom, qbinom for fun
+
+**Slide: Finding and using functions**
+
+### Subsetting
+
+By index
+
+```{r}
+threes[1]
+threes[1:3]
+letters[10]
+LETTERS[c(8, 3)]
+```
+
+By logical
+
+```{r}
+threes[threes == 9]  # Common idiom
+threes[threes > 50]
+threes[threes > 50 & threes < 90]
+threes[threes < 10 | threes == 90]
+threes[sqrt(threes) %% 1 == 0]
+```
+
+**Slide: Subsetting**
+
+- Show replicate on return
+
+### Missing values
+
+- `NA` is missing. `NULL` is different
+
+```{r}
+withMissing = threes[c(1, 10, 50)]
+sum(withMissing)
+sum(withMissing, na.rm = TRUE)
+is.na(withMissing)
+withMissing[is.na(withMissing)] <- 0
+```
+
+
+### Data frames
+
+```{r}
+df = data.frame(letters = c("a", "b", "c"), numbers = c(1, 2, 3))
+df
+df$numbers
+df$numbers^2
+df$squares = df$numbers^2
+df
+```
+
+Let's get real
+
+Mention `DBI::dbConnect`
+
+```{r}
+readmit <- read.csv("https://www.dropbox.com/s/2njq3fbt6v541xq/diabetes_readmit.csv?dl=1")
+head(readmit)
+str(readmit)
+summary(readmit)
+View(readmit)
+```
+
+```{r}
+readmit$age
+sort(readmit$age)
+table(readmit$gender)
+table(readmit$gender, readmit$race)
+
+sort(readmit$age[readmit$medical_specialty == "Cardiology"])
+mean(readmit$age[readmit$medical_specialty == "Cardiology"], na.rm = TRUE)
+mean(readmit$age[readmit$medical_specialty != "Cardiology"], na.rm = TRUE)
+# How would we decide if that difference is meaningful?
+
+# tmp column first, then overwrite
+readmit$readmitted <- ifelse(readmit$readmitted == "NO", "No", "Yes")  # do I need the ifelse?
+```
+
+**Slide: Putting it all together**
+
+
+### Packages
+
+A random package to show some power.
+
+```{r, eval = TRUE}
+# install.packages("leaflet")
+library("leaflet")
+leaflet() %>%
+  addTiles() %>%
+  # addProviderTiles("OpenTopoMap") %>%
+  addMarkers(lat = 40.632991, lng = -111.803945, label = "Us!")
+```
+
+More on Leaflet: http://rstudio.github.io/leaflet/  
+Some top R packages: https://support.rstudio.com/hc/en-us/articles/201057987-Quick-list-of-useful-R-packages  
+Much more on R packages: https://cran.r-project.org/web/views/
+
+### Working with text
+
+If time allows. 
+
+There's an easy exercise in slides.

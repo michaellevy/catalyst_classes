@@ -1,0 +1,305 @@
+{
+	"auto_complete":
+	{
+		"selected_items":
+		[
+		]
+	},
+	"buffers":
+	[
+		{
+			"file": "basic_stats/description.txt",
+			"settings":
+			{
+				"buffer_size": 1001,
+				"encoding": "UTF-8",
+				"line_ending": "Unix"
+			}
+		}
+	],
+	"build_system": "",
+	"build_system_choices":
+	[
+	],
+	"build_varint": "",
+	"command_palette":
+	{
+		"height": 167.0,
+		"last_filter": "glue",
+		"selected_items":
+		[
+			[
+				"glue",
+				"Glue - Launch"
+			],
+			[
+				"glue ",
+				"Glue - Launch"
+			],
+			[
+				"glu",
+				"Glue - Launch"
+			],
+			[
+				"g",
+				"Glue - Launch"
+			],
+			[
+				"instal",
+				"Package Control: Install Package"
+			],
+			[
+				"test",
+				"ASCII Decorator: Generate Font Test (Selected Text)"
+			],
+			[
+				"gener",
+				"ASCII Decorator: Generate Font Test (Selected Text)"
+			],
+			[
+				"install",
+				"Package Control: Install Package"
+			],
+			[
+				"remove",
+				"Package Control: Remove Package"
+			]
+		],
+		"width": 485.0
+	},
+	"console":
+	{
+		"height": 0.0,
+		"history":
+		[
+		]
+	},
+	"distraction_free":
+	{
+		"menu_visible": true,
+		"show_minimap": false,
+		"show_open_files": false,
+		"show_tabs": false,
+		"side_bar_visible": false,
+		"status_bar_visible": false
+	},
+	"expanded_folders":
+	[
+		"/Users/michael.levy/Dropbox/healthcareai-r"
+	],
+	"file_history":
+	[
+		"/Users/michael.levy/Dropbox/healthcareai-r/private/sprint_planning/sprint28.txt",
+		"/Users/michael.levy/Dropbox/healthcareai-r/private/thoughts.txt",
+		"/Users/michael.levy/Dropbox/healthcareai-r/terminal.glue",
+		"/Users/michael.levy/Library/Application Support/Sublime Text 3/Packages/Glue/keymaps/Default (OSX).sublime-keymap",
+		"/Users/michael.levy/Library/Application Support/Sublime Text 3/Packages/User/Default (OSX).sublime-keymap",
+		"/Users/michael.levy/.bash_profile",
+		"/Users/michael.levy/Library/Application Support/Sublime Text 3/Packages/User/Glue.sublime-settings",
+		"/Users/michael.levy/Dropbox/Teaching/HC_Internal/basic_stats/description.txt",
+		"/Users/michael.levy/Dropbox/healthcareai-r/sprint_planning/sprint28.txt",
+		"/Users/michael.levy/Dropbox/Teaching/HAS17/amy/notes_for_amy.txt",
+		"/Users/michael.levy/Dropbox/R/reveal.css",
+		"/Users/michael.levy/Dropbox/healthcareai-r/.gitignore",
+		"/Users/michael.levy/Dropbox/healthcareai-r/private/.gitignore",
+		"/Users/michael.levy/.gitignore_global",
+		"/Users/michael.levy/Dropbox/Teaching/HAS17/for_amy/notes_for_amy.txt",
+		"/Users/michael.levy/Dropbox/Teaching/HC_Internal/dplyr/dplyr_slides.md",
+		"/Users/michael.levy/Dropbox/Teaching/Allina/notes_from_class.txt",
+		"/Users/michael.levy/Dropbox/Teaching/HC_Internal/rmarkdown/outline_rmarkdown.md",
+		"/Users/michael.levy/Dropbox/Teaching/HC_Internal/rmarkdown/outline.md",
+		"/Users/michael.levy/Dropbox/Teaching/HAS17/notes_for_amy.md",
+		"/Users/michael.levy/Dropbox/Consulting/driscolls/analysis_notes.md",
+		"/Users/michael.levy/Dropbox/Teaching/HAS17/notes_for_amy.txt",
+		"/Users/michael.levy/Dropbox/Teaching/HAS17/HAS_outline.md",
+		"/Users/michael.levy/Dropbox/Teaching/Allina/admin/2017-07-13_meeting_gregg.txt",
+		"/Users/michael.levy/Dropbox/Teaching/Allina/data/raw/participants.txt",
+		"/Users/michael.levy/Downloads/gapminder.txt",
+		"/Users/michael.levy/Dropbox/Teaching/Allina/puttingItTogether_help.txt",
+		"/Users/michael.levy/Dropbox/Teaching/HAS17/2017-07-17_meeting.md",
+		"/Users/michael.levy/Dropbox/Teaching/Allina/admin/install_instructions.md",
+		"/Users/michael.levy/Dropbox/Teaching/HC_Internal/R_Foundations/putting_it_together_help.txt",
+		"/Users/michael.levy/Dropbox/Teaching/Allina/data/puttingItTogether_help.txt",
+		"/var/folders/q6/bvyf8cxn2b758j1p4qcpq6j4wsggss/T/tmpw7lmy5.txt",
+		"/var/folders/q6/bvyf8cxn2b758j1p4qcpq6j4wsggss/T/tmpl_xvkn.txt",
+		"/var/folders/q6/bvyf8cxn2b758j1p4qcpq6j4wsggss/T/tmp_3eyjh.txt",
+		"/Users/michael.levy/Dropbox/Teaching/Allina/admin/planning.txt",
+		"/Users/michael.levy/Dropbox/Teaching/HAS17/questions.md",
+		"/var/folders/q6/bvyf8cxn2b758j1p4qcpq6j4wsggss/T/tmp7btbhu.txt",
+		"/var/folders/q6/bvyf8cxn2b758j1p4qcpq6j4wsggss/T/tmp4yoei2.txt",
+		"/Users/michael.levy/Library/Application Support/Sublime Text 3/Packages/User/MarkdownPreview.sublime-settings",
+		"/Users/michael.levy/Library/Application Support/Sublime Text 3/Packages/Markdown Preview/MarkdownPreview.sublime-settings",
+		"/Users/michael.levy/Dropbox/Teaching/HC_Internal/Allina/initial_meeting.txt",
+		"/Users/michael.levy/Downloads/Diabetes-Data/data-01",
+		"/Users/michael.levy/Dropbox/HC_general/hcai-broadcasts/2017-07-13_plan.txt",
+		"/Users/michael.levy/Dropbox/Teaching/HC_Internal/Allina/install_instructions.md",
+		"/Users/michael.levy/Dropbox/Personal/Finances/health_ins/anthem-form-instructions.txt",
+		"/Users/michael.levy/Dropbox/HC_general/hcai-broadcasts/2017-07-13_description.txt"
+	],
+	"find":
+	{
+		"height": 25.0
+	},
+	"find_in_files":
+	{
+		"height": 93.0,
+		"where_history":
+		[
+			"\""
+		]
+	},
+	"find_state":
+	{
+		"case_sensitive": false,
+		"find_history":
+		[
+			"  \n",
+			"scripts are wh",
+			"our director",
+			"reading",
+			"”",
+			"“"
+		],
+		"highlight": true,
+		"in_selection": false,
+		"preserve_case": false,
+		"regex": false,
+		"replace_history":
+		[
+			"\"",
+			""
+		],
+		"reverse": false,
+		"show_context": true,
+		"use_buffer2": true,
+		"whole_word": false,
+		"wrap": true
+	},
+	"groups":
+	[
+		{
+			"selected": 0,
+			"sheets":
+			[
+				{
+					"buffer": 0,
+					"file": "basic_stats/description.txt",
+					"semi_transient": false,
+					"settings":
+					{
+						"buffer_size": 1001,
+						"regions":
+						{
+						},
+						"selection":
+						[
+							[
+								0,
+								0
+							]
+						],
+						"settings":
+						{
+							"syntax": "Packages/Text/Plain text.tmLanguage"
+						},
+						"translation.x": 0.0,
+						"translation.y": 0.0,
+						"zoom_level": 1.0
+					},
+					"stack_index": 0,
+					"type": "text"
+				}
+			]
+		}
+	],
+	"incremental_find":
+	{
+		"height": 25.0
+	},
+	"input":
+	{
+		"height": 33.0
+	},
+	"layout":
+	{
+		"cells":
+		[
+			[
+				0,
+				0,
+				1,
+				1
+			]
+		],
+		"cols":
+		[
+			0.0,
+			1.0
+		],
+		"rows":
+		[
+			0.0,
+			1.0
+		]
+	},
+	"menu_visible": true,
+	"output.find_results":
+	{
+		"height": 0.0
+	},
+	"output.markdown":
+	{
+		"height": 100.0
+	},
+	"pinned_build_system": "",
+	"project": "internal_teaching.sublime-project",
+	"replace":
+	{
+		"height": 46.0
+	},
+	"save_all_on_build": true,
+	"select_file":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+			[
+				"thought",
+				"private/thoughts.txt"
+			]
+		],
+		"width": 0.0
+	},
+	"select_project":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"select_symbol":
+	{
+		"height": 0.0,
+		"last_filter": "",
+		"selected_items":
+		[
+		],
+		"width": 0.0
+	},
+	"selected_group": 0,
+	"settings":
+	{
+	},
+	"show_minimap": true,
+	"show_open_files": true,
+	"show_tabs": true,
+	"side_bar_visible": true,
+	"side_bar_width": 260.0,
+	"status_bar_visible": true,
+	"template_settings":
+	{
+	}
+}

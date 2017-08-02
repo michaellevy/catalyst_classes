@@ -1,0 +1,52 @@
+---
+title: "My thallium report"
+author: "Mike Levy"
+date: "`r format(Sys.time(), '%Y-%m-%d')`"
+output: html_notebook
+---
+
+```{r, warning = FALSE, message = FALSE}
+library(tidyverse)
+heart_data <- read_csv("data/heart_disease_clean.csv", na = "?")
+```
+
+# Distribution of thallium test results
+
+Few people get 6's. But what are 6's!?
+
+```{r, results = "hold"}
+table(heart_data$thallium, useNA = "always")
+count(heart_data, thallium)
+```
+
+
+```{r, include=FALSE}
+# The excel way
+heart_data %>%
+  mutate(thallium = ifelse(thallium == 3, "normal",
+                           ifelse(thallium == 6, "fixed defect", "reversible defect")))
+
+# The sql way
+thallium_code <- 
+  data.frame(thallium = c(3, 6, 7),
+             thallium_result = c("normal", "fixed defect", "reversible defect"))
+heart_data <- left_join(heart_data, thallium_code)
+heart_data
+```
+
+# Do thallium results predict vessel narrowing?
+
+```{r, fig.width = 3}
+ggplot(heart_data, aes(x = thallium_result, y = narrowing_num_vessels)) + 
+  geom_boxplot()
+```
+
+# Test with a statistical model
+
+```{r, results="asis"}
+mod <- lm(narrowing_num_vessels ~ thallium_result, heart_data)
+library(stargazer)
+stargazer(mod, type = "html")
+# Package htmlTable is great for this as well, or kable is built in
+```
+

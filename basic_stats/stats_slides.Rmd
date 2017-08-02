@@ -1,0 +1,140 @@
+---
+title: "Statistics 101"
+author: "Michael Levy [&lt;michael.levy@heatlhcatalyst.com&gt;](mailto:joe@rstudio.com)"
+date: "`r Sys.Date()`"
+output:
+  revealjs::revealjs_presentation:
+    theme: night
+    transition: none
+    self_contained: true
+    css: ../../../R/reveal.css
+
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, include = FALSE)
+library(tidyverse)
+library(broom)
+load("data/angina.RDA")
+```
+
+## Caveats
+
+Statistics is hard!
+
+![wonderland](https://media.giphy.com/media/B1aOlXWCIUYjS/giphy.gif)
+
+> - Today: First 1 - 2 courses in statistics in 90 minutes
+
+> - Can't cover underlying theory, assumptions, caveats, etc. 
+
+> - Especially where the stakes are high, consult an expert
+
+## Null Hypothesis Significance Testing (NHST)
+
+- Define null ($H_0$) and alternative ($H_1$) hypotheses and try to reject the null
+
+> - Imagine repeated sampling under $H_0$
+- $p$-value assumes $H_0$ therefore cannot assess $p(H_0)$
+- What does $p$-value tell us? Probability of obtaining more extreme sample given $H_0$, not probability $H_0$ is false
+> - $p \leq .05$ not magic
+
+
+## Difference Between Groups
+
+Are cholesterol levels different for patients with exercise versus non-exercise induced angina?
+
+1. Make a plot to compare. Does it look like there's a reliable difference?
+1. Conduct a statistical test and examine the output.
+1. What is the probability that we would have observed a greater difference in cholesterol if there weren't a difference between exercise and non-exercise induced angina?
+1. **BONUS**: What if our hypothesis were more specific: that patients with exercise induced angina had *greater* cholesterol. Run the appropriate statistical test and find the corresponding probability. How does it compare to the above?
+
+```{r, include=FALSE}
+ggplot(h, aes(x = cholesterol, fill = exercise_induced_flag)) + 
+  geom_density(alpha = .5)
+t.test(cholesterol ~ exercise_induced_flag, h, alternative = "two")
+t.test(cholesterol ~ exercise_induced_flag, h, alternative = "greater")
+```
+
+## Predictors of Cholesterol
+
+1. Do cholesterol levels vary significantly across age and sex? 
+1. MCQ: Who in the dataset is likely to have the highest cholesterol levels?
+    - Younger women
+    - Older women
+    - Younger men
+    - Older men
+1. Earlier we saw that exercise induced angina was associated with greater cholesterol levels. Model the effect of exercise associated angina while also accounting for age and sex. Do any of your conclusions change?
+1. **BONUS**: Does age have a greater impact on the cholesterol values of men or women? Is the effect "statistically significant"?
+
+```{r, include=FALSE}
+lm(cholesterol ~ age + sex, h) %>%
+  summary()
+lm(cholesterol ~ age + sex + exercise_induced_flag, h) %>%
+  summary()
+
+ggplot(h, aes(y = cholesterol, color = sex, x = age)) + 
+  geom_point()
+```
+
+## Predicting number of vessels with narrowing
+
+Our response variable of interest is `narrowing_num_vessels`, the number of coronary arteries with greater than 50% reduction in diameter. 
+
+Suppose narrowing is only discoverable with a costly procedure. The provider asks you whether you can use all the other data they have already measured on patients to predict narrowing so that they can avoid doing the procedure. 
+
+Treating the number of vessels as a continuous variable (i.e. using `lm`), how accurately can you predict narrowing? What are the strongest predictors of narrowing? 
+
+**BONUS OPTION 1 -- Statistical Focus**: What is problematic about modeling narrowing this way? Build a better model, either by simplifying the response variable or using a generalized linear model.
+
+**BONUS OPTION 2 -- Analytics Focus**: Create an R Markdown document that presents your findings. Try to use plots to present the results in a quickly-digestible form, supplemented by your statistical model for rigor.
+
+```{r}
+complete_h <- na.omit(h)
+m <- lm(narrowing_num_vessels ~ ., complete_h)
+summary(m)
+tidy(m) %>%
+  arrange(desc(abs(statistic)))
+
+mpred <- predict(m)
+mean(abs(mpred - complete_h$narrowing_num_vessels))
+
+pois_mod <- glm(narrowing_num_vessels ~ ., h, family = "poisson") 
+pois_pred <- predict(pois_mod, type = "response")
+mean(abs(pois_pred - complete_h$narrowing_num_vessels))
+```
+
+
+
+## Correlation vs. Regression
+
+```{r, fig.height = 4, include = TRUE}
+knitr::opts_chunk$set(echo = FALSE, include = TRUE)
+
+n = 1000
+sd = 15
+df <- 
+  tibble(
+    x = runif(n, 0, 100),
+    y1 = x * .25 + rnorm(n, 0, sd),
+    y2 = x * 2 + rnorm(n, 0, sd)
+  )
+
+gather(df, key = response, value = y, -x) %>%
+  ggplot(aes(x = x, y = y)) + 
+  geom_point(size = .2) + 
+  facet_wrap(~ response)
+```
+
+#### Correlation coefficients
+
+```{r}
+round(c(y1 = cor(df$x, df$y1), y2 = cor(df$x, df$y2)), 2)
+```
+
+#### Linear model coefficients
+
+```{r}
+round(c(y1 = coef(lm(y1 ~ x, df))[[2]], y2 = coef(lm(y2 ~ x, df))[[2]]), 2)
+```
+

@@ -1,0 +1,131 @@
+<style>
+.small-code pre code {
+  font-size: 1em;
+}
+</style>
+
+R Foundations Slides
+========================================================
+author: michael.levy@healthcatalyst.com
+date: July 12, 2017
+autosize: true
+
+Why R?
+=================
+
+<font size = "6px">
+Why Script?
+* Power (control)
+* Flexibility  
+  * Whole pipeline in one place
+* Editability
+* Reproducability
+* Traceability
+* Unambiguous communication  
+	* Literate programming & notebooks  
+
+***
+Why R?    
+* Designed for data analysis  
+  * *And fully functional programming language*
+* Extensible: 10k+ packages on CRAN  
+* Free
+* Cross-platform  
+* Open-source  
+* Huge user community
+</font>
+
+MCQ: Assignment
+==================
+class: small-code
+
+Without running the code, what will the following lines print to the console?
+
+
+```{r, eval = FALSE}
+price_per_truffle <- 75
+number_truffles <- 5
+total_value <- price_per_truffle * number_truffles
+# Oh no, they're spoiling!
+price_per_truffle <- price_per_truffle - (price_per_truffle * 1/3)
+total_value <- price_per_truffle * number_truffles
+total_value
+```
+
+a. 50  
+b. 125  
+c. 250  
+d. 375
+
+Data Structures
+=================
+
+
+<div align="left">
+<img src="dataStructures.png" width=1200>  
+</div>
+<small>*Maite Ceballos & Nicolás Cardiel*</small>
+
+
+Using functions
+================
+
+Create a sequence of all the multiples of three from three to 300. 
+
+You have not been taught how to do this -- the idea is to practice finding the functionality you need.
+Some combination of trial and error, help files, and Google
+should get it done. Help files are challenging to read at first, but it’s important
+to learn how to find the info you need in them. 
+
+**BONUS**: Create a vector with ten evenly-spaced numbers starting with one and 
+ending with one-million. What is the sum of the second and ninth entries in this vector?
+
+MCQ: Subsetting
+==========
+class: small-code
+
+We're going to simulate flipping a fair coin 10 times and count how many times it comes up heads. 
+We'll repeat that 100 times. Intuitively, out of the 100 trials, how many times do you expect 
+to get eight or more heads? Run the code below and then subset the `flips` vector to only those trials with
+eight or more heads to test your intuition. **BONUS**: Find a function to programmatically count the number of trials with eight or more heads. 
+
+```{r}
+set.seed(84121)  # Control randomness to ensure we all get the same result
+flips <- rbinom(n = 100, size = 10, p = 0.5)  # Simulate flips
+```
+
+a. 0  
+b. 1  
+c. 5  
+d. 10
+
+**SUPER BONUS**: Find the R function to calculate the precise probability of 
+eight or more heads in such a trial. The help file for `rbinom` will get you going in the right direction.
+This may require some statistical knowledge.
+
+Putting it all together
+=======================
+
+Is the number of medications given per day in the hospital different for patients 
+who are versus are not readmitted? 
+
+- Try to breakdown the steps needed to do this on your own. If you're struggling,
+there is some guidance at http://tinyurl.com/hc-rfound-help
+
+**BONUS 1**: Is this difference statistically significant at the $\alpha = 0.05$ level?
+
+**SUPER 2**: Plot the two distributions and compare.
+
+Working with text
+==============
+
+1. Create a length-three character vector with entries "igniting", "outcomes", and "improvement"
+and assign it to a variable.  
+1. Find a function to count the number of characters in a string. Google is your friend.
+1. Subset the vector to only the words with more than eight characters.
+
+**BONUS**: Use regular expressions to extract the words that contain "me".
+
+**SUPER-BONUS**: Convert our tagline to Pig Latin by placing the first letter of each word at the end and following it with "ae".
+
+
